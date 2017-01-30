@@ -57,24 +57,19 @@ public class TeleOp_1   extends LinearOpMode
 
                 front_right.setPower(-gamepad1.right_stick_y);
                 back_right.setPower(-gamepad1.right_stick_y);
-            
-            //left_trigger and right_trigger strafing
-            while (gamepad1.left_trigger != 0.0 || gamepad1.right_trigger != 0.0) {
-                //if left_trigger is activated, reverse ALL motors
-                while (gamepad1.left_trigger != 0.0) {
-                    front_left.setPower(gamepad1.left_trigger);
-                    back_left.setPower(-gamepad1.left_trigger);
-                    front_right.setPower(-gamepad1.left_trigger);
-                    back_right.setPower(gamepad1.left_trigger);
-                }
+                
+                front_left.setPower(gamepad1.left_trigger);
+                back_left.setPower(-gamepad1.left_trigger);
+                front_right.setPower(-gamepad1.left_trigger);
+                back_right.setPower(gamepad1.left_trigger);
+                
 
                 //otherwise check for right_trigger
                 front_left.setPower(-gamepad1.right_trigger);
                 back_left.setPower(gamepad1.right_trigger);
                 front_right.setPower(gamepad1.right_trigger);
                 back_right.setPower(-gamepad1.right_trigger);
-            }
-
+            
             //collector toggle
             if (gamepad1.a) {
                 //toggle state of boolean value

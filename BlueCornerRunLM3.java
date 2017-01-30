@@ -16,49 +16,100 @@ public class BlueCornerRunLM3 extends LinearOpMode
     private DcMotor back_right;
     private DcMotor collector;
     private DcMotor shooter;
+    
+    //servos
+    private Servo beacon;
+    
+    //sensors
+    private OpticalDistanceSensor floorODS
 
 
     @Override
     public void runOpMode() throws InterruptedException
-    {  front_left = hardwareMap.dcMotor.get("front_left");
+    {   
+        front_left = hardwareMap.dcMotor.get("front_left");
         back_left = hardwareMap.dcMotor.get("back_left");
         front_right = hardwareMap.dcMotor.get("front_right");
         back_right = hardwareMap.dcMotor.get("back_right");
         collector = hardwareMap.dcMotor.get("collector");
         shooter = hardwareMap.dcMotor.get("shooter");
+        
+        floorODS = hardwareMap.OpticalDistanceSensor.get("ods1");
+        color = hardwareMap.OpticalDistanceSensor.get("color");
+        
+        beacon = hardwareMap.servo.get("beacon");
 
         front_left.setDirection(DcMotor.Direction.REVERSE);
         back_left.setDirection(DcMotor.Direction.REVERSE);
         collector.setDirection(DcMotor.Direction.REVERSE);
-
+        
+        color.enableLED(false);     //Set color sensor to passive mode
 
         waitForStart();
 
         //START AUTONOMOUS
-        //initiate at starting point A
-        Thread.sleep(10000);
-        DriveForwardTime(POWER, 1800); //drive forward
-        StopMotors();//stop
-        TurnLeftTime(POWER, 1200); //move forward
-        ShootTime(1000); //shoot
-        ShootTime(0);
-        Thread.sleep(2000);
-        //StopMotors();//stop
-        collector.setPower(1);//run collector
-        Thread.sleep(3000);//
-        ShootTime(1000);//shoot
-        //idle();
-
-        //Thread.sleep(4000);
-
-        TurnRightTime(POWER, 1300);
-        DriveForwardTime(POWER, 1400);
-
+        
+        //initiate at starting point
+        Drive(POWER, 500);
+        TurnRightTime(TURN_POWER, 1600);
+        DriveForward(1);
+        TurnRightTime(-TURN_POWER, 1600);
+        
+        //first beacon
+        DriveForward(.4);
+        while (floorODS < 800)
+            Thread.sleep(50);
+        pause();
+        Drive(POWER, 400);
+        
+        if (color.blue() > color.red()) {
+            beacon.setPosition(MIN_POS);
+            while (beacon.getPosition != 0) {
+            }
+            beacon.setPosition(MAX_POS);
+        }
+        else {
+            Drive(POWER, 500)
+            beacon.setPosition(MIN_POS);
+            while (beacon.getPosition != 0) {
+            }
+            beacon.setPosition(MAX_POS);
+        }
+        waitOneFullHardwareCycle();
+    
+        /*
+        Drive(1, 3500);
+        
+        //second beacon
+        DriveForward(.4);
+        while (floorODS < 800)
+            Thread.sleep(50);
+        pause();
+        Drive(POWER, 400);
+        
+        if (color.blue() > color.red()) {
+            beacon.setPosition(MIN_POS);
+            while (beacon.getPosition != 0) {
+            }
+            beacon.setPosition(MAX_POS);
+        }
+        else {
+            Drive(POWER, 500)
+            beacon.setPosition(MIN_POS);
+            while (beacon.getPosition != 0) {
+            }
+            beacon.setPosition(MAX_POS);
+        }
+        waitOneFullHardwareCycle();
+        */
+        
+        idle();
     }
 
     //establishes default magic number for drive power
 
-    double TURN_POWER = .2;double POWER = .5;
+    double TURN_POWER = .2;
+    double POWER = .5;
 
     private void DriveForwardTime(double power, long time) throws InterruptedException
     {
@@ -77,7 +128,7 @@ public class BlueCornerRunLM3 extends LinearOpMode
     private void TurnRightTime(double power, long time) throws InterruptedException
     {
         //default right
-        front_left.setPower(power);
+         front_left.setPower(power);
         back_left.setPower(power);
         front_right.setPower(-power);
         back_right.setPower(-power);
@@ -119,7 +170,7 @@ public class BlueCornerRunLM3 extends LinearOpMode
         Thread.sleep(500);
     }
 
-    private void Drive(double maxpower, long time)throws InterruptedException
+    private void Drive(double maxpower, long time) throws InterruptedException
     {
         double out;
         int t = 0;        //t = runtime

@@ -52,15 +52,12 @@ public class TeleOp_1   extends LinearOpMode
         while(opModeIsActive()) {
             //RUN CODE
 
-            //threshold values for stick_y left and right
-            while (gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0) {
                 front_left.setPower(-gamepad1.left_stick_y);
                 back_left.setPower(-gamepad1.left_stick_y);
 
                 front_right.setPower(-gamepad1.right_stick_y);
                 back_right.setPower(-gamepad1.right_stick_y);
-            }
-
+            
             //left_trigger and right_trigger strafing
             while (gamepad1.left_trigger != 0.0 || gamepad1.right_trigger != 0.0) {
                 //if left_trigger is activated, reverse ALL motors
@@ -76,14 +73,6 @@ public class TeleOp_1   extends LinearOpMode
                 back_left.setPower(gamepad1.right_trigger);
                 front_right.setPower(gamepad1.right_trigger);
                 back_right.setPower(-gamepad1.right_trigger);
-            }
-
-            //to fix motor 'creeping'
-            if (gamepad1.left_stick_y == 0.0 || gamepad1.right_stick_y == 0.0) {
-                front_left.setPower(0.0);
-                back_left.setPower(0.0);
-                front_right.setPower(0.0);
-                back_right.setPower(0.0);
             }
 
             //collector toggle

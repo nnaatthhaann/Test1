@@ -70,7 +70,7 @@ public class BlueAuton extends LinearOpMode
         pause();
         Drive(POWER, 400);
 
-        if (color.blue() > color.red()) {
+        if (color.blue() > color.red() && color.blue() > color.green()) {
             beacon.setPosition(Servo.MIN_POSITION);
             while (beacon.getPosition() != Servo.MIN_POSITION) {
             }
@@ -78,6 +78,7 @@ public class BlueAuton extends LinearOpMode
         }
         else {
             Drive(POWER, 500);
+            wait(100);
             beacon.setPosition(Servo.MIN_POSITION);
             while (beacon.getPosition() != 0) {
             }

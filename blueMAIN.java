@@ -32,14 +32,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode;
 
-import android.webkit.JavascriptInterface;
-
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsAnalogOpticalDistanceSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.EventLoopManager;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -62,10 +58,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "BLUE")  // @Autonomous(...) is the other common choice
+@TeleOp(name = "BLUE", group = "Opmodes")  // @Autonomous(...) is the other common choice
 public class blueMAIN extends OpMode {
+    //establishes default magic number for drive power
+    double POWER = .5;
     private ElapsedTime runtime = new ElapsedTime();
-
     //dcmotors
     private DcMotor front_left;
     private DcMotor back_left;
@@ -75,20 +72,17 @@ public class blueMAIN extends OpMode {
     private DcMotor shooter;
     private DcMotor lifter;
     private DcMotor lifter2;
-
     //servos
     private Servo beacon;
     private Servo lift;
-
     //sensors
     private ModernRoboticsAnalogOpticalDistanceSensor floorODS;
-    private ModernRoboticsAnalogOpticalDistanceSensor wallODS;
+    //private ModernRoboticsAnalogOpticalDistanceSensor wallODS;        //replaced by range
     private ModernRoboticsI2cColorSensor color;
     private ModernRoboticsI2cRangeSensor range;
     private ModernRoboticsI2cGyro gyro;
-    private EventLoopManager eventLoopManager1;
 
-    @Override   //INITIALIZE
+    @Override                       //INITIALIZE
     public void init() {
         front_left = hardwareMap.dcMotor.get("front_left");
         back_left = hardwareMap.dcMotor.get("back_left");
@@ -103,7 +97,7 @@ public class blueMAIN extends OpMode {
         lift = hardwareMap.servo.get("lift");
 
         floorODS = (ModernRoboticsAnalogOpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ods1");
-        wallODS = (ModernRoboticsAnalogOpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ods2");
+        //wallODS = (ModernRoboticsAnalogOpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ods2");      //replaced by range
         color = (ModernRoboticsI2cColorSensor) hardwareMap.colorSensor.get("color");
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
         gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
@@ -118,6 +112,7 @@ public class blueMAIN extends OpMode {
         int target = 0;
         double TURN_POWER = .2;
         double POWER = .5;
+        double distance;
 
         //gyro sensor calib
         gyro.calibrate();
@@ -128,48 +123,43 @@ public class blueMAIN extends OpMode {
         telemetry.addData("Status:", "Initialized");
     }
 
-    //establishes default magic number for drive power
-    double POWER = .5;
-
     @Override
     public void init_loop() {
     }
 
-    @Override   //AUTONOMOUS
+    @Override                       //AUTONOMOUS
     public void start() {
         telemetry.addData("Status:", "Autonomous");
+        double distance;
 
         DriveForwardTime(.5, 500);
-        TurnDegrees(30);
-        while (range.getDistance(DistanceUnit.CM) > 5)
-            DriveForward(1);
-        pause();
-        while (gyro.getIntegratedZValue() > 0){
-            front_right.setPower(.5);
-            back_right.setPower(.5);
-            front_left.setPower(.1);
-            back_left.setPower(.1);
+        turnDegrees(30);
+        DriveForward(1);
+        while (range.getDistance(DistanceUnit.CM) > 5) {
         }
-        //back up to line
-        //check beacon color
-        //move or push beacon
-        //follow wall to next line
-        //check beaconcolor
-        //move or push beacon
-        //turn away from wall
-        //approach hoop
-        //shoot 2 balls
+        pause();
 
+        //align with wall
+        while (gyro.getIntegratedZValue() > 0) {
+            right(0.5);
+            left(0.1);
+        }
 
-
-
-        //first beacon
-        DriveForward(.4);
+        //approach first beacon
+        //drive to line
         while (floorODS.getRawLightDetected() < 800) {
+            distance = range.getDistance(DistanceUnit.CM);
+
+            //will maintain 8 cm from wall
+            left(-distance / 16);
+            right(-(1.0 - (distance / 16)));
         }
         pause();
+
+        //align with target
         DriveForwardTime(POWER, 400);
 
+        //test for beacon color & press button
         if (color.blue() > color.red()) {
             beacon.setPosition(Servo.MIN_POSITION);
             while (beacon.getPosition() != Servo.MIN_POSITION) {
@@ -183,33 +173,60 @@ public class blueMAIN extends OpMode {
             beacon.setPosition(Servo.MAX_POSITION);
         }
 
-        DriveForwardTime(1, 3500);
+        //follow wall to next line
+        while (floorODS.getRawLightDetected() < 800) {
+            distance = range.getDistance(DistanceUnit.CM);
+
+            //will maintain 8 cm from wall
+            left(distance / 16);
+            right(1.0 - (distance / 16));
+        }
+
+        //align with beacon
+        DriveForwardTime(POWER, 400);
+
+        //test for beacon color & press button
+        if (color.blue() > color.red()) {
+            beacon.setPosition(Servo.MIN_POSITION);
+            while (beacon.getPosition() != Servo.MIN_POSITION) {
+            }
+            beacon.setPosition(Servo.MAX_POSITION);
+        } else {
+            DriveForwardTime(-POWER, 500);
+            beacon.setPosition(Servo.MIN_POSITION);
+            while (beacon.getPosition() != 0) {
+            }
+            beacon.setPosition(Servo.MAX_POSITION);
+        }
+
+        //move away from wall
+        //face hoop
+        strafeLeft(2000);
+        turnDegrees(45);
+
+        //approach hoop
+        //shoot 2 balls
+        DriveForwardTime(-1, 1500);
+        turnDegrees(90);
+        shootNumber(2);
+
+        //turn to cap ball
+        turnDegrees(90);
+        DriveForwardTime(1, 500);
 
         /*
-        //second beacon
-        DriveForward(.4);
-        while (floorODS < 800)
-            Thread.sleep(50);
-        pause();
-        Drive(POWER, 400);
 
-        if (color.blue() > color.red()) {
-            beacon.setPosition(MIN_POS);
-            while (beacon.getPosition != 0) {
-            }
-            beacon.setPosition(MAX_POS);
-        }
-        else {
-            Drive(POWER, 500)
-            beacon.setPosition(MIN_POS);
-            while (beacon.getPosition != 0) {
-            }
-            beacon.setPosition(MAX_POS);
-        }
+        BAM ez
+        (2) Beacon              60pts
+        (2) Center Vortex       30pts
+            CapBall             5pts
+            Center Parking      5pts
+            ------------------- 100pts
+
         */
     }
 
-    @Override   //TELEOP - complete
+    @Override                       //TELEOP
     public void loop() {
         telemetry.addData("Status:", "TeleOp");
         telemetry.update();
@@ -286,7 +303,7 @@ public class blueMAIN extends OpMode {
         lifterPower(0.0);
     }
 
-    @Override   //complete
+    @Override                       //END
     public void stop() {
     }
 
@@ -308,27 +325,17 @@ public class blueMAIN extends OpMode {
         front_right.setPower(power);
         back_right.setPower(power);
     }
-/*
-    private void TurnRightTime(double power, long time) {
-        runtime.reset();
-        runtime.startTime();
-        //default right
-        do {
-            front_left.setPower(power);
-            back_left.setPower(power);
-            front_right.setPower(-power);
-            back_right.setPower(-power);
-        } while (runtime.time() < time);
-        pause();
-    }
-*/
+
     private void pause() {
         DriveForward(0);
-        while (runtime.time() < 400) {
+
+        runtime.reset();
+        runtime.startTime();
+        while (runtime.time() < 250) {
         }
     }
 
-    private void TurnDegrees(int target) {
+    private void turnDegrees(int target) {
         turnAbsolute(target + gyro.getIntegratedZValue());
     }
 
@@ -355,91 +362,56 @@ public class blueMAIN extends OpMode {
         pause();
     }
 
-    /*
-    private void Drive(double maxpower, long time) throws InterruptedException {
-        double out;
-        int t = 0;        //t = runtime
+    private void shootNumber(int balls) {
+        int num;
+        for (num = 0; num <= balls; num++) {
+            shootTime(1000);
 
-        //Decceleration of motors
-        if (maxpower > 0) //if power is pos
-        {
-            //Acceleration of the 4 drive motors
-            for (double x = .1; x <= maxpower; x += .1) {
-                out = x;
+            do {
+                collector.setPower(1);
+            } while (runtime.time() < 3000);
+            collector.setPower(0);
 
-                front_left.setPower(out);
-                back_left.setPower(out);
-                front_right.setPower(out);
-                back_right.setPower(out);
-                Thread.sleep(50);
-
-
-           //Every 50 milis add one value to variable 'time'
-           //Thus, resulting 'time' is length of runtime in sets of 50 milis
-
-                t = t + 1;
-            }
-
-            DriveForwardTime(maxpower, time - 2 * (50 * t));
-
-            //Decceleration of motors
-            for (double z = maxpower; z >= .05; z -= .05) {
-                out = z;
-
-                front_left.setPower(out);
-                back_left.setPower(out);
-                front_right.setPower(out);
-                back_right.setPower(out);
-                Thread.sleep(50);
-            }
-        } else        //if power is neg
-        {
-            //Acceleration of the 4 drive motors
-            for (double x = -.1; x >= maxpower; x -= .1) {
-                out = x;
-
-                front_left.setPower(out);
-                back_left.setPower(out);
-                front_right.setPower(out);
-                back_right.setPower(out);
-                Thread.sleep(50);
-
-
-           //Every 50 milis add one value to variable 'time'
-           //Thus, resulting 'time' is length of runtime in sets of 50 milis
-
-                t = t + 1;
-            }
-
-            DriveForwardTime(maxpower, time - 2 * (50 * t));
-
-            //Decceleration of motors
-            for (double z = maxpower; z <= -.05; z += .05) {
-                out = z;
-
-                front_left.setPower(out);
-                back_left.setPower(out);
-                front_right.setPower(out);
-                back_right.setPower(out);
-                Thread.sleep(50);
-            }
+            pause();
         }
-
-        pause();
     }
-    */
 
-    private void ShootTime(long time) {
+    private void shootTime(long time) {
         runtime.reset();
         runtime.startTime();
-        do {
+        while (runtime.time() < time) {
             shooter.setPower(1);
-        } while (runtime.time() < time);
+        }
+        shooter.setPower(0);
+    }
+
+    private void strafeLeft(long time) {
+        runtime.reset();
+        runtime.startTime();
+        while (runtime.time() < time) {
+            double heading = gyro.getHeading();
+
+            front_left.setPower(heading / 100);
+            front_right.setPower(-heading / 100);
+            back_left.setPower(-(1.0 - (heading / 100)));
+            back_right.setPower(1.0 - (heading / 100));
+        }
+        pause();
     }
 
     //TeleOp Methods
     private void lifterPower(double power) {
         lifter.setPower(power);
         lifter2.setPower(power);
+    }
+
+    private void left(double power) {
+        front_left.setPower(power);
+        back_left.setPower(power);
+    }
+
+    private void right(double power) {
+        back_right.setPower(power);
+        front_right.setPower(power);
     }
 }

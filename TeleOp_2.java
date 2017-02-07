@@ -4,15 +4,19 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 /**
  * Created by Ramroids 10318 on 12/26/2016.
+ * ADDITIONS TO THIS VERSION
+ * Added toggle system for the 2 separate drive modes.
+ * When drivemode is "true" the drive is normal.
+ * When it is "false" the power is scaled to a factor of .3 and left and right are reversed.
+ * This is to provide an easier way for the driver to maneuver the robot w/ the cap ball.
  */
 
-@TeleOp(name = "TeleOp")
+@TeleOp(name = "TeleOp 3.3")
 @Disabled
-public class TeleOp_1 extends LinearOpMode
+public class TeleOp_2 extends LinearOpMode
 {
     private DcMotor front_left;
     private DcMotor back_left;
@@ -51,25 +55,41 @@ public class TeleOp_1 extends LinearOpMode
         boolean toggle = false;
         boolean drivemode = true;
 
+        telemetry.addData("Drive Mode:", "NORMAL");
+        telemetry.update();
+
         waitForStart();
 
         while(opModeIsActive()) {
             //RUN CODE
 
-            if (drivemode) {
-                //threshold values for stick_y left and right
-                while (gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0) {
+            //drive mode toggle
+            boolean mCurrState = gamepad1.right_stick_button;
+            boolean mPrevState = false;
+
+            if ((mCurrState == true) && (mCurrState != mPrevState))
+            {
+                drivemode = !drivemode;
+            }
+            mCurrState = mPrevState;
+            telemetry.addData("Drive Mode:", drivemode ? "NORMAL" : "CAP BALL");
+            telemetry.update();
+
+            if (drivemode)
+            {
+                while (gamepad1.left_stick_y > 0 || gamepad1.left_stick_y < 0
+                        || gamepad1.right_stick_y > 0 || gamepad1.right_stick_y < 0) {
                     front_left.setPower(-gamepad1.left_stick_y);
                     back_left.setPower(-gamepad1.left_stick_y);
-
                     front_right.setPower(-gamepad1.right_stick_y);
                     back_right.setPower(-gamepad1.right_stick_y);
                 }
             }
-            else
+
+            if (!drivemode)
             {
-                while (gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0)
-                {
+                while (gamepad1.left_stick_y > 0 || gamepad1.left_stick_y < 0
+                        || gamepad1.right_stick_y > 0 || gamepad1.right_stick_y < 0) {
                     back_right.setPower(gamepad1.left_stick_y * 0.3);
                     front_right.setPower(gamepad1.left_stick_y * 0.3);
                     back_left.setPower(gamepad1.right_stick_y * 0.3);
@@ -77,10 +97,11 @@ public class TeleOp_1 extends LinearOpMode
                 }
             }
 
+            /*
             //left_trigger and right_trigger strafing
-            while (gamepad1.left_trigger != 0.0 || gamepad1.right_trigger != 0.0) {
+            if (gamepad1.left_trigger != 0.0 || gamepad1.right_trigger != 0.0) {
                 //if left_trigger is activated, reverse ALL motors
-                while (gamepad1.left_trigger != 0.0) {
+                while (gamepad1.left_trigger < 0.0) {
                     front_left.setPower(gamepad1.left_trigger);
                     back_left.setPower(-gamepad1.left_trigger);
                     front_right.setPower(-gamepad1.left_trigger);
@@ -93,6 +114,7 @@ public class TeleOp_1 extends LinearOpMode
                 front_right.setPower(gamepad1.right_trigger);
                 back_right.setPower(-gamepad1.right_trigger);
             }
+            */
 
             //to fix motor 'creeping'
             if (gamepad1.left_stick_y == 0.0 || gamepad1.right_stick_y == 0.0) {

@@ -62,8 +62,9 @@ public class BlueAuton extends LinearOpMode
         //double distance;
 
         //gyro sensor calib
-        gyro.calibrate();
         telemetry.addData("Gyro Sensor:", "Calibrating... Keep robot still");
+        gyro.calibrate();
+
         while (gyro.isCalibrating()) {
         }
         telemetry.addData("Gyro Sensor:", "Done");

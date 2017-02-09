@@ -58,7 +58,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "BLUE", group = "Opmodes")  // @Autonomous(...) is the other common choice
+@TeleOp(name = "BLUE1", group = "Opmodes")  // @Autonomous(...) is the other common choice
 public class blueMAIN extends OpMode {
     //establishes default magic number for drive power
     double POWER = .5;
@@ -84,6 +84,8 @@ public class blueMAIN extends OpMode {
 
     @Override                       //INITIALIZE
     public void init() {
+        telemetry.addData("Gyro Sensor:", "Calibrating... Keep robot still");
+
         front_left = hardwareMap.dcMotor.get("front_left");
         back_left = hardwareMap.dcMotor.get("back_left");
         front_right = hardwareMap.dcMotor.get("front_right");
@@ -114,11 +116,13 @@ public class blueMAIN extends OpMode {
         double POWER = .5;
         double distance;
 
+
+        telemetry.addData("Gyro Sensor:", "Calibrating... Keep robot still");
         //gyro sensor calib
         gyro.calibrate();
-        telemetry.addData("Gyro Sensor:", "Calibrating... Keep robot still");
         while (gyro.isCalibrating()) {
         }
+        telemetry.clear();
         telemetry.addData("Gyro Sensor:", "Done");
         telemetry.addData("Status:", "Initialized");
     }
@@ -313,9 +317,9 @@ public class blueMAIN extends OpMode {
     private void DriveForwardTime(double power, long time) {
         runtime.reset();
         runtime.startTime();
-        do {
+        while (runtime.time() < time) {
             DriveForward(power);
-        } while (runtime.time() < time);
+        }
         DriveForward(0);
     }
 
@@ -367,9 +371,9 @@ public class blueMAIN extends OpMode {
         for (num = 0; num <= balls; num++) {
             shootTime(1000);
 
-            do {
+            while (runtime.time() < 3000) {
                 collector.setPower(1);
-            } while (runtime.time() < 3000);
+            }
             collector.setPower(0);
 
             pause();

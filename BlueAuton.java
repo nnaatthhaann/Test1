@@ -87,30 +87,29 @@ public class BlueAuton extends LinearOpMode {
         double distance;
 
         DriveForwardTime(.5, 500);
-        turnDegrees(-90);
-        shootNumber(2);
-        sleep(500);
-        turnDegrees(125);
+        //turnDegrees(-90);
+        //shootNumber(2);
+        //sleep(250);
+        //DriveForwardTime(-.5,500);
+        turnDegrees(35);
         DriveForward(.5);
-        while (range.getDistance(DistanceUnit.CM) > 32) {
+        while (range.getDistance(DistanceUnit.CM) > 32) { //editdisss
         }
         pause();
         right(0.4);
         left(-.2);
         //align with wall
-        while (gyro.getIntegratedZValue() < -7) {
+        while (gyro.getIntegratedZValue() < -5) { //EDITDIS
         }
 
-        if (range.getDistance(DistanceUnit.CM) > 8)
-        strafeLeft(-0.5);
         //approach first beacon
         //drive to line
         while (floorODS.getRawLightDetected() < 1) {
             distance = range.getDistance(DistanceUnit.CM);
 
             //will maintain 8 cm from wall
-            left((-distance / 16) * 0.5);
-            right((-(1.0 - (distance / 16))) * 0.5);
+            left((-distance / 16) * 0.3);
+            right((-(1.0 - (distance / 16))) * 0.3);
         }
         pause();
 
@@ -118,22 +117,11 @@ public class BlueAuton extends LinearOpMode {
         DriveForwardTime(POWER, 400);
         sleep(500);
 
-        //test for beacon color & press button
-        if (color.blue() > color.red()) {
-            beacon.setPosition(1);
-            while (beacon.getPosition() != Servo.MAX_POSITION) {
-            }
-            beacon.setPosition(0);
-            while (beacon.getPosition() != Servo.MIN_POSITION) {
-            }
-        } else {
-            DriveForwardTime(0.15, 500);
-            beacon.setPosition(Servo.MAX_POSITION);
-            while (beacon.getPosition() != Servo.MAX_POSITION) {
-            }
-            beacon.setPosition(Servo.MIN_POSITION);
-            while (beacon.getPosition() != Servo.MIN_POSITION) {
-            }
+        PushButton();
+
+        if (color.red() > color.blue()) {
+            PushButton();
+            sleep(500);
         }
 
 
@@ -216,7 +204,7 @@ public class BlueAuton extends LinearOpMode {
     private void turnAbsolute(int target) throws InterruptedException {
         int zAccumulated;  //Set variables to gyro readings
 
-        double turnSpeed = 0.25;
+        double turnSpeed = 0.35;
 
         do {  //Continue while the robot direction is further than three degrees from the target
             zAccumulated = -gyro.getIntegratedZValue();
@@ -257,7 +245,7 @@ public class BlueAuton extends LinearOpMode {
         shooter.setPower(0);
     }
 
-    private void strafeLeft(double power, long time) throws InterruptedException {
+    private void strafeLeft(double power) throws InterruptedException {
         double heading;
         long t;
         heading = gyro.getHeading();
@@ -279,5 +267,11 @@ public class BlueAuton extends LinearOpMode {
     private void right(double power) {
         back_right.setPower(power);
         front_right.setPower(power);
+    }
+
+    private void PushButton() {
+        beacon.setPosition(1);
+        sleep(1000);
+        beacon.setPosition(0);
     }
 }

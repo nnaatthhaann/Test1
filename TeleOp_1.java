@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  */
 
 @TeleOp(name = "TeleOp")
-@Disabled
 public class TeleOp_1 extends LinearOpMode
 {
     private DcMotor front_left;

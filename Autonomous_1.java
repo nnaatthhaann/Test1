@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.animation.Animator;
-import android.provider.Telephony;
-import android.test.InstrumentationTestRunner;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -13,7 +9,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.io.InterruptedIOException;
 
 /**
  * Created by Ramroids 10318 on 12/30/2016.

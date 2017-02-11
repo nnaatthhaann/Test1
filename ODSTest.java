@@ -36,7 +36,7 @@ public class ODSTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        ods1 = hardwareMap.opticalDistanceSensor.get("ods");
+        ods1 = hardwareMap.opticalDistanceSensor.get("ods1");
 
         waitForStart();
 

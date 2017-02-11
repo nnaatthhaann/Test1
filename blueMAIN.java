@@ -36,6 +36,7 @@ import com.qualcomm.hardware.modernrobotics.ModernRoboticsAnalogOpticalDistanceS
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -59,6 +60,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  */
 
 @TeleOp(name = "BLUE1", group = "Opmodes")  // @Autonomous(...) is the other common choice
+
 public class blueMAIN extends OpMode {
     //establishes default magic number for drive power
     double POWER = .5;
@@ -118,6 +120,7 @@ public class blueMAIN extends OpMode {
 
 
         telemetry.addData("Gyro Sensor:", "Calibrating... Keep robot still");
+        telemetry.update();
         //gyro sensor calib
         gyro.calibrate();
         while (gyro.isCalibrating()) {
@@ -125,6 +128,7 @@ public class blueMAIN extends OpMode {
         telemetry.clear();
         telemetry.addData("Gyro Sensor:", "Done");
         telemetry.addData("Status:", "Initialized");
+        telemetry.update();
     }
 
     @Override
@@ -136,8 +140,9 @@ public class blueMAIN extends OpMode {
         telemetry.addData("Status:", "Autonomous");
         double distance;
 
+        telemetry.addData("Heading:", gyro.getIntegratedZValue());
         DriveForwardTime(.5, 500);
-        turnDegrees(30);
+        turnAbsolute(30);
         DriveForward(1);
         while (range.getDistance(DistanceUnit.CM) > 5) {
         }
@@ -315,11 +320,8 @@ public class blueMAIN extends OpMode {
 
     //Autonomous Methods
     private void DriveForwardTime(double power, long time) {
-        runtime.reset();
-        runtime.startTime();
-        while (runtime.time() < time) {
-            DriveForward(power);
-        }
+        DriveForward(power);
+        sleep(time);
         DriveForward(0);
     }
 
@@ -333,10 +335,7 @@ public class blueMAIN extends OpMode {
     private void pause() {
         DriveForward(0);
 
-        runtime.reset();
-        runtime.startTime();
-        while (runtime.time() < 250) {
-        }
+        sleep(5000);
     }
 
     private void turnDegrees(int target) {
@@ -344,7 +343,7 @@ public class blueMAIN extends OpMode {
     }
 
     private void turnAbsolute(int target) {
-        int zAccumulated = gyro.getIntegratedZValue();  //Set variables to gyro readings
+        int zAccumulated = -gyro.getIntegratedZValue();  //Set variables to gyro readings
 
         double turnSpeed = 0.3;
 
@@ -353,15 +352,18 @@ public class blueMAIN extends OpMode {
                 front_left.setPower(-turnSpeed);
                 back_left.setPower(-turnSpeed);
                 front_right.setPower(turnSpeed);
-                front_right.setPower(turnSpeed);
+                back_right.setPower(turnSpeed);
             }
 
             if (zAccumulated < target) {
                 front_left.setPower(turnSpeed);
                 back_left.setPower(turnSpeed);
                 front_right.setPower(-turnSpeed);
-                front_right.setPower(-turnSpeed);
+                back_right.setPower(-turnSpeed);
             }
+            telemetry.clear();
+            telemetry.addData("Heading:", gyro.getIntegratedZValue());
+            telemetry.update();
         }
         pause();
     }
@@ -371,9 +373,8 @@ public class blueMAIN extends OpMode {
         for (num = 0; num <= balls; num++) {
             shootTime(1000);
 
-            while (runtime.time() < 3000) {
-                collector.setPower(1);
-            }
+            collector.setPower(1);
+            sleep(3000);
             collector.setPower(0);
 
             pause();
@@ -381,11 +382,8 @@ public class blueMAIN extends OpMode {
     }
 
     private void shootTime(long time) {
-        runtime.reset();
-        runtime.startTime();
-        while (runtime.time() < time) {
-            shooter.setPower(1);
-        }
+        shooter.setPower(1);
+        sleep(time);
         shooter.setPower(0);
     }
 
@@ -417,5 +415,11 @@ public class blueMAIN extends OpMode {
     private void right(double power) {
         back_right.setPower(power);
         front_right.setPower(power);
+    }
+
+    private void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {}
     }
 }

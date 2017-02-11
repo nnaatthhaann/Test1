@@ -55,88 +55,58 @@ public class TeleOp_1 extends LinearOpMode
         while(opModeIsActive()) {
             //RUN CODE
 
-            if (drivemode) {
-                //threshold values for stick_y left and right
-                while (gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0) {
-                    front_left.setPower(-gamepad1.left_stick_y);
-                    back_left.setPower(-gamepad1.left_stick_y);
+            telemetry.addData("Status:", "TeleOp");
+            telemetry.update();
 
-                    front_right.setPower(-gamepad1.right_stick_y);
-                    back_right.setPower(-gamepad1.right_stick_y);
-                }
+            front_left.setPower(-gamepad1.left_stick_y);
+            back_left.setPower(-gamepad1.left_stick_y);
+
+            front_right.setPower(-gamepad1.right_stick_y);
+            back_right.setPower(-gamepad1.right_stick_y);
+
+            //left and right trigger
+            double mCalib = 0.5;
+            front_left.setPower((gamepad1.left_trigger * mCalib) + (-gamepad1.left_stick_y));
+            back_left.setPower((-gamepad1.left_trigger) + (-gamepad1.left_stick_y));
+            front_right.setPower((-gamepad1.left_trigger * mCalib) + (-gamepad1.right_stick_y));
+            back_right.setPower((gamepad1.left_trigger) + (-gamepad1.right_stick_y));
+
+            front_left.setPower((-gamepad1.right_trigger * mCalib) + (-gamepad1.left_stick_y));
+            back_left.setPower((gamepad1.right_trigger) + (-gamepad1.left_stick_y));
+            front_right.setPower((gamepad1.right_trigger * mCalib) + (-gamepad1.right_stick_y));
+            back_right.setPower((-gamepad1.right_trigger) + (-gamepad1.right_stick_y));
+
+            if (gamepad1.right_bumper) {
+                double power = 0.5;
+                front_left.setPower(power);
+                back_left.setPower(power);
+                front_right.setPower(-power);
+                back_right.setPower(-power);
             }
-            else
-            {
-                while (gamepad1.left_stick_y != 0.0 || gamepad1.right_stick_y != 0.0)
-                {
-                    back_right.setPower(gamepad1.left_stick_y * 0.3);
-                    front_right.setPower(gamepad1.left_stick_y * 0.3);
-                    back_left.setPower(gamepad1.right_stick_y * 0.3);
-                    front_left.setPower(gamepad1.right_stick_y * 0.3);
-                }
-            }
-
-            //left_trigger and right_trigger strafing
-            while (gamepad1.left_trigger != 0.0 || gamepad1.right_trigger != 0.0) {
-                //if left_trigger is activated, reverse ALL motors
-                while (gamepad1.left_trigger != 0.0) {
-                    front_left.setPower(gamepad1.left_trigger);
-                    back_left.setPower(-gamepad1.left_trigger);
-                    front_right.setPower(-gamepad1.left_trigger);
-                    back_right.setPower(gamepad1.left_trigger);
-                }
-
-                //otherwise check for right_trigger
-                front_left.setPower(-gamepad1.right_trigger);
-                back_left.setPower(gamepad1.right_trigger);
-                front_right.setPower(gamepad1.right_trigger);
-                back_right.setPower(-gamepad1.right_trigger);
-            }
-
-            //to fix motor 'creeping'
-            if (gamepad1.left_stick_y == 0.0 || gamepad1.right_stick_y == 0.0) {
-                front_left.setPower(0.0);
-                back_left.setPower(0.0);
-                front_right.setPower(0.0);
-                back_right.setPower(0.0);
+            if (gamepad1.left_bumper) {
+                double power = -0.5;
+                front_left.setPower(power);
+                back_left.setPower(power);
+                front_right.setPower(-power);
+                back_right.setPower(-power);
             }
 
             //collector toggle
             if (gamepad1.a) {
                 //toggle state of boolean value
                 toggle = !toggle;
-
-                //turns on collector if value is true
-                if (toggle) {
-                    collector.setPower(1.0);
-                }
-
-                //waits for button to be reset
-                Thread.sleep(250);
             }
-            if (toggle == false) {
-                collector.setPower(0.0);
+            //turns on collector if value is true
+            if (toggle) {
+                collector.setPower(1.0);
+            } else {
+                collector.setPower(0);
             }
 
             //spits out ball
             while (gamepad1.b) {
                 collector.setPower(-1.0);
             }
-
-            //to fix motor 'creeping'
-            if (gamepad1.left_stick_y == 0.0 || gamepad1.right_stick_y == 0.0) {
-                front_left.setPower(0.0);
-                back_left.setPower(0.0);
-                front_right.setPower(0.0);
-                back_right.setPower(0.0);
-            }
-
-            /*
-            if (gamepad1.x )
-            {
-                //use encoder for shooter??
-            }
-            */
 
             while (gamepad1.x) {
                 shooter.setPower(1.0);
@@ -147,18 +117,15 @@ public class TeleOp_1 extends LinearOpMode
             shooter.setPower(0.0);
 
             //Cap Ball Lifter
-            if (gamepad1.dpad_up || gamepad1.dpad_down)
-            {
+            if (gamepad1.dpad_up || gamepad1.dpad_down) {
                 while (gamepad1.dpad_up) {
                     lifterPower(-1);
                 }
                 while (gamepad1.dpad_down) {
-                   lifterPower(.5);
+                    lifterPower(.5);
                 }
             }
             lifterPower(0.0);
-
-            idle();
         }
     }
 

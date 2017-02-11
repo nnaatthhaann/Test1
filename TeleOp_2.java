@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * This is to provide an easier way for the driver to maneuver the robot w/ the cap ball.
  */
 
-@TeleOp(name = "TeleOp 3.3")
+@TeleOp(name = "TeleOp2")
 @Disabled
 public class TeleOp_2 extends LinearOpMode
 {
